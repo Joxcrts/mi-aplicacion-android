@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">Mis Tareas</string>
+
+    <!-- Pantalla principal -->
+    <string name="progreso_titulo">Tu progreso de hoy</string>
+    <string name="progreso_resumen">%1$d de %2$d tareas completadas</string>
+    <string name="buscar_tareas">Buscar tareas…</string>
+    <string name="filtro_todas">Todas</string>
+    <string name="filtro_pendientes">Pendientes</string>
+    <string name="filtro_completadas">Completadas</string>
+    <string name="sin_tareas">No hay tareas</string>
+    <string name="sin_tareas_ayuda">Pulsa \"Nueva tarea\" para crear la primera</string>
+    <string name="nueva_tarea">Nueva tarea</string>
+    <string name="editar_tarea">Editar tarea</string>
+    <string name="eliminar_tarea">Eliminar tarea</string>
+    <string name="eliminar_completadas">Eliminar tareas completadas</string>
+    <string name="marcar_completada">Marcar como completada</string>
+    <string name="marcar_pendiente">Marcar como pendiente</string>
+    <string name="tarea_eliminada">Se eliminó \"%1$s\"</string>
+    <string name="deshacer">Deshacer</string>
+
+    <!-- Diálogo de edición -->
+    <string name="campo_titulo">Título</string>
+    <string name="campo_descripcion">Descripción (opcional)</string>
+    <string name="campo_prioridad">Prioridad</string>
+    <string name="campo_fecha_limite">Fecha límite</string>
+    <string name="quitar_fecha">Quitar fecha límite</string>
+    <string name="error_titulo_vacio">El título no puede estar vacío</string>
+    <string name="prioridad_alta">Alta</string>
+    <string name="prioridad_media">Media</string>
+    <string name="prioridad_baja">Baja</string>
+    <string name="guardar">Guardar</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="aceptar">Aceptar</string>
+</resources>
