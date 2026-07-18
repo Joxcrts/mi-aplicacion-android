@@ -5,14 +5,16 @@ Aplicación Android completa de gestión de tareas, construida con las tecnolog�
 ## ✨ Funcionalidades
 
 - **Crear, editar y eliminar tareas** con título, descripción, prioridad y fecha límite opcional.
-- **Marcar tareas como completadas** con un toque.
+- **Marcar tareas como completadas** con un toque, o **deslizando la tarjeta a la derecha**.
+- **Deslizar a la izquierda para eliminar**, con opción de deshacer desde un Snackbar.
 - **Prioridades con colores** (Alta 🔴, Media 🟠, Baja 🟢) y ordenamiento automático: las pendientes y urgentes aparecen primero.
-- **Búsqueda en tiempo real** por título o descripción.
-- **Filtros**: Todas / Pendientes / Completadas.
-- **Barra de progreso diario** que muestra cuántas tareas llevas completadas.
-- **Deshacer eliminación** desde un Snackbar, para no perder tareas por accidente.
-- **Limpieza rápida** de todas las tareas completadas desde la barra superior.
-- **Tema claro y oscuro** automático, con colores dinámicos (Material You) en Android 12+.
+- **Fechas inteligentes**: las tarjetas muestran "Hoy" o "Mañana" y las tareas vencidas se resaltan en rojo.
+- **Búsqueda en tiempo real** por título o descripción, con botón para limpiarla.
+- **Filtros con contador**: Todas / Pendientes / Completadas muestran cuántas tareas hay en cada una.
+- **Barra de progreso diario** con mensaje de celebración al completar todo.
+- **Limpieza rápida** de las tareas completadas desde la barra superior, con confirmación previa.
+- **Tema claro y oscuro** automático, con colores dinámicos (Material You) en Android 12+ e icono temático (monocromo) en Android 13+.
+- **En español e inglés**, según el idioma del dispositivo.
 - **Persistencia local**: las tareas se guardan en el dispositivo con Room y sobreviven al cierre de la app.
 
 ## 🏗️ Arquitectura y tecnologías
@@ -40,6 +42,7 @@ app/src/main/java/com/joxcrts/mistareas/
     ├── TareasViewModel.kt       # Lógica de presentación y estado
     ├── TareasScreen.kt          # Pantalla principal en Compose
     ├── EditarTareaDialog.kt     # Diálogo de creación/edición
+    ├── Fechas.kt                # Utilidades de fecha límite (UTC, vencidas)
     └── theme/                   # Colores, tipografía y tema Material 3
 ```
 
@@ -61,8 +64,10 @@ El APK queda en `app/build/outputs/apk/debug/app-debug.apk`.
 
 ## ✅ Pruebas
 
-El proyecto incluye pruebas unitarias del ViewModel (`app/src/test/`) que cubren:
-creación y validación de tareas, filtros, búsqueda, deshacer eliminación y cálculo de progreso.
+El proyecto incluye pruebas unitarias (`app/src/test/`) que cubren:
+creación y validación de tareas, filtros, búsqueda, deshacer eliminación,
+edición conservando el estado, limpieza de completadas, cálculo de progreso
+y la lógica de fechas límite (conversión UTC y vencimiento).
 
 ## 📱 Requisitos
 

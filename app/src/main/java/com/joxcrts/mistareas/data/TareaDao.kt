@@ -29,6 +29,9 @@ interface TareaDao {
     )
     fun observarTodas(): Flow<List<Tarea>>
 
+    @Query("SELECT * FROM tareas WHERE id = :id")
+    suspend fun obtenerPorId(id: Long): Tarea?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(tarea: Tarea): Long
 

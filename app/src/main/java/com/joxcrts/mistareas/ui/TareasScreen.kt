@@ -1,7 +1,9 @@
 package com.joxcrts.mistareas.ui
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,7 +18,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Edit
@@ -25,6 +30,8 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Inbox
+import androidx.compose.material.icons.outlined.SearchOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -41,17 +48,26 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxState
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,8 +79,7 @@ import com.joxcrts.mistareas.data.Tarea
 import com.joxcrts.mistareas.ui.theme.PrioridadAlta
 import com.joxcrts.mistareas.ui.theme.PrioridadBaja
 import com.joxcrts.mistareas.ui.theme.PrioridadMedia
-import java.text.DateFormat
-import java.util.Date
+import java.time.LocalDate
 
 /** Pantalla principal: cabecera con progreso, buscador, filtros y lista de tareas. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,6 +91,7 @@ fun TareasScreen(viewModel: TareasViewModel) {
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogo by remember { mutableStateOf(false) }
     var tareaEnEdicion by remember { mutableStateOf<Tarea?>(null) }
+    var confirmarLimpieza by remember { mutableStateOf(false) }
 
     val mensajeEliminada = stringResource(R.string.tarea_eliminada)
     val accionDeshacer = stringResource(R.string.deshacer)
@@ -103,7 +119,7 @@ fun TareasScreen(viewModel: TareasViewModel) {
                 ),
                 actions = {
                     if (uiState.completadas > 0) {
-                        IconButton(onClick = viewModel::eliminarCompletadas) {
+                        IconButton(onClick = { confirmarLimpieza = true }) {
                             Icon(
                                 imageVector = Icons.Default.DeleteSweep,
                                 contentDescription = stringResource(R.string.eliminar_completadas)
@@ -141,6 +157,18 @@ fun TareasScreen(viewModel: TareasViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text(stringResource(R.string.buscar_tareas)) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                trailingIcon = if (uiState.busqueda.isNotEmpty()) {
+                    {
+                        IconButton(onClick = { viewModel.cambiarBusqueda("") }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = stringResource(R.string.limpiar_busqueda)
+                            )
+                        }
+                    }
+                } else {
+                    null
+                },
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp)
             )
@@ -148,7 +176,7 @@ fun TareasScreen(viewModel: TareasViewModel) {
             Spacer(Modifier.height(8.dp))
 
             FilaFiltros(
-                filtroActual = uiState.filtro,
+                uiState = uiState,
                 onFiltroSeleccionado = viewModel::cambiarFiltro
             )
 
@@ -164,21 +192,22 @@ fun TareasScreen(viewModel: TareasViewModel) {
                         CircularProgressIndicator()
                     }
                 }
-                uiState.tareas.isEmpty() -> EstadoVacio()
+                uiState.tareas.isEmpty() -> EstadoVacio(hayTareasOcultas = uiState.totales > 0)
                 else -> {
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(uiState.tareas, key = { it.id }) { tarea ->
-                            TarjetaTarea(
+                            TarjetaTareaDeslizable(
                                 tarea = tarea,
                                 onAlternar = { viewModel.alternarCompletada(tarea) },
                                 onEditar = {
                                     tareaEnEdicion = tarea
                                     mostrarDialogo = true
                                 },
-                                onEliminar = { viewModel.eliminarTarea(tarea) }
+                                onEliminar = { viewModel.eliminarTarea(tarea) },
+                                modifier = Modifier.animateItem()
                             )
                         }
                         item { Spacer(Modifier.height(88.dp)) }
@@ -196,6 +225,38 @@ fun TareasScreen(viewModel: TareasViewModel) {
                 mostrarDialogo = false
             },
             onCerrar = { mostrarDialogo = false }
+        )
+    }
+
+    if (confirmarLimpieza) {
+        AlertDialog(
+            onDismissRequest = { confirmarLimpieza = false },
+            icon = { Icon(Icons.Default.DeleteSweep, contentDescription = null) },
+            title = { Text(stringResource(R.string.eliminar_completadas)) },
+            text = {
+                Text(
+                    pluralStringResource(
+                        R.plurals.confirmar_eliminar_completadas,
+                        uiState.completadas,
+                        uiState.completadas
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.eliminarCompletadas()
+                        confirmarLimpieza = false
+                    }
+                ) {
+                    Text(stringResource(R.string.eliminar))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmarLimpieza = false }) {
+                    Text(stringResource(R.string.cancelar))
+                }
+            }
         )
     }
 }
@@ -225,11 +286,15 @@ private fun CabeceraProgreso(uiState: TareasUiState) {
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = stringResource(
-                    R.string.progreso_resumen,
-                    uiState.completadas,
-                    uiState.totales
-                ),
+                text = if (uiState.todoCompletado) {
+                    stringResource(R.string.todo_completado)
+                } else {
+                    stringResource(
+                        R.string.progreso_resumen,
+                        uiState.completadas,
+                        uiState.totales
+                    )
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
@@ -239,7 +304,7 @@ private fun CabeceraProgreso(uiState: TareasUiState) {
 
 @Composable
 private fun FilaFiltros(
-    filtroActual: FiltroTareas,
+    uiState: TareasUiState,
     onFiltroSeleccionado: (FiltroTareas) -> Unit
 ) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -249,39 +314,139 @@ private fun FilaFiltros(
                 FiltroTareas.PENDIENTES -> stringResource(R.string.filtro_pendientes)
                 FiltroTareas.COMPLETADAS -> stringResource(R.string.filtro_completadas)
             }
+            val conteo = when (filtro) {
+                FiltroTareas.TODAS -> uiState.totales
+                FiltroTareas.PENDIENTES -> uiState.pendientes
+                FiltroTareas.COMPLETADAS -> uiState.completadas
+            }
             FilterChip(
-                selected = filtroActual == filtro,
+                selected = uiState.filtro == filtro,
                 onClick = { onFiltroSeleccionado(filtro) },
-                label = { Text(etiqueta) }
+                label = {
+                    Text(stringResource(R.string.filtro_con_conteo, etiqueta, conteo))
+                }
             )
         }
     }
 }
 
 @Composable
-private fun EstadoVacio() {
+private fun EstadoVacio(hayTareasOcultas: Boolean) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Outlined.Inbox,
+            imageVector = if (hayTareasOcultas) Icons.Outlined.SearchOff else Icons.Outlined.Inbox,
             contentDescription = null,
             modifier = Modifier.size(72.dp),
             tint = MaterialTheme.colorScheme.outline
         )
         Spacer(Modifier.height(12.dp))
         Text(
-            text = stringResource(R.string.sin_tareas),
+            text = stringResource(
+                if (hayTareasOcultas) R.string.sin_resultados else R.string.sin_tareas
+            ),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.outline
         )
         Text(
-            text = stringResource(R.string.sin_tareas_ayuda),
+            text = stringResource(
+                if (hayTareasOcultas) R.string.sin_resultados_ayuda else R.string.sin_tareas_ayuda
+            ),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.outline
         )
+    }
+}
+
+/**
+ * Tarjeta con gestos de deslizamiento: hacia la derecha alterna
+ * completada/pendiente y hacia la izquierda elimina (con opción de deshacer).
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TarjetaTareaDeslizable(
+    tarea: Tarea,
+    onAlternar: () -> Unit,
+    onEditar: () -> Unit,
+    onEliminar: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val alternarActual by rememberUpdatedState(onAlternar)
+    val eliminarActual by rememberUpdatedState(onEliminar)
+    val estadoDeslizamiento = rememberSwipeToDismissBoxState(
+        confirmValueChange = { valor ->
+            when (valor) {
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    alternarActual()
+                    false
+                }
+                SwipeToDismissBoxValue.EndToStart -> {
+                    eliminarActual()
+                    true
+                }
+                SwipeToDismissBoxValue.Settled -> false
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = estadoDeslizamiento,
+        modifier = modifier,
+        backgroundContent = {
+            FondoDeslizamiento(
+                estado = estadoDeslizamiento,
+                completada = tarea.completada
+            )
+        }
+    ) {
+        TarjetaTarea(
+            tarea = tarea,
+            onAlternar = onAlternar,
+            onEditar = onEditar,
+            onEliminar = onEliminar
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FondoDeslizamiento(
+    estado: SwipeToDismissBoxState,
+    completada: Boolean
+) {
+    val direccion = estado.dismissDirection
+    val color = when (direccion) {
+        SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.secondaryContainer
+        SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.errorContainer
+        SwipeToDismissBoxValue.Settled -> Color.Transparent
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(16.dp))
+            .background(color)
+            .padding(horizontal = 20.dp),
+        contentAlignment = when (direccion) {
+            SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+            else -> Alignment.CenterEnd
+        }
+    ) {
+        when (direccion) {
+            SwipeToDismissBoxValue.StartToEnd -> Icon(
+                imageVector = if (completada) Icons.AutoMirrored.Filled.Undo else Icons.Default.Check,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            SwipeToDismissBoxValue.EndToStart -> Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onErrorContainer
+            )
+            SwipeToDismissBoxValue.Settled -> Unit
+        }
     }
 }
 
@@ -350,21 +515,7 @@ private fun TarjetaTarea(
                     )
                 }
                 tarea.fechaLimite?.let { fecha ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Outlined.Event,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            text = DateFormat.getDateInstance(DateFormat.MEDIUM)
-                                .format(Date(fecha)),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                    EtiquetaFechaLimite(fechaMillis = fecha, completada = tarea.completada)
                 }
             }
 
@@ -383,6 +534,43 @@ private fun TarjetaTarea(
                 )
             }
         }
+    }
+}
+
+/**
+ * Fecha límite de la tarjeta: muestra "Hoy" o "Mañana" cuando aplica y
+ * resalta en color de error las tareas pendientes cuya fecha ya pasó.
+ */
+@Composable
+private fun EtiquetaFechaLimite(fechaMillis: Long, completada: Boolean) {
+    val fechaLocal = fechaLimiteComoLocalDate(fechaMillis)
+    val hoy = LocalDate.now()
+    val vencida = !completada && fechaLocal.isBefore(hoy)
+
+    val texto = when (fechaLocal) {
+        hoy -> stringResource(R.string.fecha_hoy)
+        hoy.plusDays(1) -> stringResource(R.string.fecha_manana)
+        else -> formatearFechaLimite(fechaMillis)
+    }
+    val color = if (vencida) {
+        MaterialTheme.colorScheme.error
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = Icons.Outlined.Event,
+            contentDescription = null,
+            modifier = Modifier.size(14.dp),
+            tint = color
+        )
+        Spacer(Modifier.width(4.dp))
+        Text(
+            text = if (vencida) stringResource(R.string.fecha_vencida, texto) else texto,
+            style = MaterialTheme.typography.labelMedium,
+            color = color
+        )
     }
 }
 

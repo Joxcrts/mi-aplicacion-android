@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Event
@@ -32,12 +33,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.joxcrts.mistareas.R
 import com.joxcrts.mistareas.data.Prioridad
 import com.joxcrts.mistareas.data.Tarea
-import java.text.DateFormat
-import java.util.Date
 
 /**
  * Diálogo para crear una tarea nueva (si [tarea] es null) o editar una existente.
@@ -79,6 +79,9 @@ fun EditarTareaDialog(
                             Text(stringResource(R.string.error_titulo_vacio))
                         }
                     },
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences
+                    ),
                     singleLine = true
                 )
                 Spacer(Modifier.height(8.dp))
@@ -87,6 +90,9 @@ fun EditarTareaDialog(
                     onValueChange = { descripcion = it },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(stringResource(R.string.campo_descripcion)) },
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences
+                    ),
                     minLines = 2,
                     maxLines = 4
                 )
@@ -113,9 +119,8 @@ fun EditarTareaDialog(
                             contentDescription = null
                         )
                         Text(
-                            text = fechaLimite?.let {
-                                DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(it))
-                            } ?: stringResource(R.string.campo_fecha_limite),
+                            text = fechaLimite?.let { formatearFechaLimite(it) }
+                                ?: stringResource(R.string.campo_fecha_limite),
                             modifier = Modifier.padding(start = 8.dp)
                         )
                     }
