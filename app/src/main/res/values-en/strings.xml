@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">My Tasks</string>
+
+    <!-- Main screen -->
+    <string name="progreso_titulo">Your progress today</string>
+    <string name="progreso_resumen">%1$d of %2$d tasks completed</string>
+    <string name="todo_completado">All done! You completed every task 🎉</string>
+    <string name="buscar_tareas">Search tasks…</string>
+    <string name="limpiar_busqueda">Clear search</string>
+    <string name="filtro_todas">All</string>
+    <string name="filtro_pendientes">Pending</string>
+    <string name="filtro_completadas">Completed</string>
+    <string name="filtro_con_conteo">%1$s · %2$d</string>
+    <string name="sin_tareas">No tasks yet</string>
+    <string name="sin_tareas_ayuda">Tap \"New task\" to create your first one</string>
+    <string name="sin_resultados">No tasks found</string>
+    <string name="sin_resultados_ayuda">Try a different search or filter</string>
+    <string name="nueva_tarea">New task</string>
+    <string name="editar_tarea">Edit task</string>
+    <string name="eliminar_tarea">Delete task</string>
+    <string name="eliminar_completadas">Delete completed tasks</string>
+    <string name="eliminar">Delete</string>
+    <string name="marcar_completada">Mark as completed</string>
+    <string name="marcar_pendiente">Mark as pending</string>
+    <string name="tarea_eliminada">Deleted \"%1$s\"</string>
+    <string name="deshacer">Undo</string>
+    <string name="fecha_hoy">Today</string>
+    <string name="fecha_manana">Tomorrow</string>
+    <string name="fecha_vencida">Overdue · %1$s</string>
+    <plurals name="confirmar_eliminar_completadas">
+        <item quantity="one">%1$d completed task will be permanently deleted.</item>
+        <item quantity="other">%1$d completed tasks will be permanently deleted.</item>
+    </plurals>
+
+    <!-- Edit dialog -->
+    <string name="campo_titulo">Title</string>
+    <string name="campo_descripcion">Description (optional)</string>
+    <string name="campo_prioridad">Priority</string>
+    <string name="campo_fecha_limite">Due date</string>
+    <string name="quitar_fecha">Remove due date</string>
+    <string name="error_titulo_vacio">The title cannot be empty</string>
+    <string name="prioridad_alta">High</string>
+    <string name="prioridad_media">Medium</string>
+    <string name="prioridad_baja">Low</string>
+    <string name="guardar">Save</string>
+    <string name="cancelar">Cancel</string>
+    <string name="aceptar">OK</string>
+</resources>

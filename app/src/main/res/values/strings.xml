@@ -4,20 +4,33 @@
     <!-- Pantalla principal -->
     <string name="progreso_titulo">Tu progreso de hoy</string>
     <string name="progreso_resumen">%1$d de %2$d tareas completadas</string>
+    <string name="todo_completado">¡Todo listo! Completaste todas tus tareas 🎉</string>
     <string name="buscar_tareas">Buscar tareas…</string>
+    <string name="limpiar_busqueda">Limpiar búsqueda</string>
     <string name="filtro_todas">Todas</string>
     <string name="filtro_pendientes">Pendientes</string>
     <string name="filtro_completadas">Completadas</string>
+    <string name="filtro_con_conteo">%1$s · %2$d</string>
     <string name="sin_tareas">No hay tareas</string>
     <string name="sin_tareas_ayuda">Pulsa \"Nueva tarea\" para crear la primera</string>
+    <string name="sin_resultados">No se encontraron tareas</string>
+    <string name="sin_resultados_ayuda">Prueba con otra búsqueda u otro filtro</string>
     <string name="nueva_tarea">Nueva tarea</string>
     <string name="editar_tarea">Editar tarea</string>
     <string name="eliminar_tarea">Eliminar tarea</string>
     <string name="eliminar_completadas">Eliminar tareas completadas</string>
+    <string name="eliminar">Eliminar</string>
     <string name="marcar_completada">Marcar como completada</string>
     <string name="marcar_pendiente">Marcar como pendiente</string>
     <string name="tarea_eliminada">Se eliminó \"%1$s\"</string>
     <string name="deshacer">Deshacer</string>
+    <string name="fecha_hoy">Hoy</string>
+    <string name="fecha_manana">Mañana</string>
+    <string name="fecha_vencida">Vencida · %1$s</string>
+    <plurals name="confirmar_eliminar_completadas">
+        <item quantity="one">Se eliminará %1$d tarea completada de forma permanente.</item>
+        <item quantity="other">Se eliminarán %1$d tareas completadas de forma permanente.</item>
+    </plurals>
 
     <!-- Diálogo de edición -->
     <string name="campo_titulo">Título</string>

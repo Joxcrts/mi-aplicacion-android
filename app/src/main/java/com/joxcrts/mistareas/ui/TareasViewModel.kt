@@ -37,6 +37,14 @@ data class TareasUiState(
     /** Progreso entre 0f y 1f para la barra de avance. */
     val progreso: Float
         get() = if (totales == 0) 0f else completadas.toFloat() / totales
+
+    /** Cantidad de tareas aún sin completar. */
+    val pendientes: Int
+        get() = totales - completadas
+
+    /** True cuando todas las tareas del día están completadas. */
+    val todoCompletado: Boolean
+        get() = totales > 0 && completadas == totales
 }
 
 class TareasViewModel(private val repositorio: TareaRepository) : ViewModel() {
@@ -105,7 +113,9 @@ class TareasViewModel(private val repositorio: TareaRepository) : ViewModel() {
                     )
                 )
             } else {
-                val existente = uiState.value.tareas.find { it.id == id }
+                // Se consulta la base de datos (y no la lista visible, que puede
+                // estar filtrada) para no perder el estado original de la tarea.
+                val existente = repositorio.obtenerPorId(id)
                 repositorio.guardar(
                     Tarea(
                         id = id,

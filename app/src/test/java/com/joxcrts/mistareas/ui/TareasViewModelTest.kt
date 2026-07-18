@@ -29,6 +29,9 @@ private class TareaDaoFalso : TareaDao {
 
     override fun observarTodas(): Flow<List<Tarea>> = tareas
 
+    override suspend fun obtenerPorId(id: Long): Tarea? =
+        tareas.value.find { it.id == id }
+
     override suspend fun insertar(tarea: Tarea): Long {
         val id = if (tarea.id == 0L) siguienteId++ else tarea.id
         tareas.value = tareas.value.filter { it.id != id } + tarea.copy(id = id)
@@ -144,6 +147,67 @@ class TareasViewModelTest {
         assertEquals("Importante", viewModel.uiState.value.tareas.first().titulo)
         recoleccion.cancel()
     }
+
+    @Test
+    fun `editar una tarea conserva su estado de completada`() = runTest(dispatcher.scheduler) {
+        val recoleccion = launch { viewModel.uiState.collect {} }
+
+        viewModel.guardarTarea(0L, "Original", "", Prioridad.MEDIA, null)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val tarea = viewModel.uiState.value.tareas.first()
+        viewModel.alternarCompletada(tarea)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.guardarTarea(tarea.id, "Editada", "nueva descripción", Prioridad.ALTA, null)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val editada = viewModel.uiState.value.tareas.first()
+        assertEquals("Editada", editada.titulo)
+        assertTrue(editada.completada)
+        assertEquals(1, viewModel.uiState.value.completadas)
+        recoleccion.cancel()
+    }
+
+    @Test
+    fun `eliminar completadas conserva las pendientes`() = runTest(dispatcher.scheduler) {
+        val recoleccion = launch { viewModel.uiState.collect {} }
+
+        viewModel.guardarTarea(0L, "Pendiente", "", Prioridad.MEDIA, null)
+        viewModel.guardarTarea(0L, "Hecha", "", Prioridad.MEDIA, null)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val hecha = viewModel.uiState.value.tareas.first { it.titulo == "Hecha" }
+        viewModel.alternarCompletada(hecha)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.eliminarCompletadas()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val estado = viewModel.uiState.value
+        assertEquals(listOf("Pendiente"), estado.tareas.map { it.titulo })
+        assertEquals(0, estado.completadas)
+        recoleccion.cancel()
+    }
+
+    @Test
+    fun `los contadores de pendientes y todo completado son coherentes`() =
+        runTest(dispatcher.scheduler) {
+            val recoleccion = launch { viewModel.uiState.collect {} }
+
+            viewModel.guardarTarea(0L, "Única", "", Prioridad.MEDIA, null)
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals(1, viewModel.uiState.value.pendientes)
+            assertTrue(!viewModel.uiState.value.todoCompletado)
+
+            viewModel.alternarCompletada(viewModel.uiState.value.tareas.first())
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals(0, viewModel.uiState.value.pendientes)
+            assertTrue(viewModel.uiState.value.todoCompletado)
+            recoleccion.cancel()
+        }
 
     @Test
     fun `el progreso refleja la proporcion de completadas`() = runTest(dispatcher.scheduler) {
